@@ -36,8 +36,8 @@ RUN apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
     apt-get install python${PYTHON_VERSION} python${PYTHON_VERSION}-distutils python3-pip python3-setuptools python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv --no-install-recommends --assume-yes
-RUN python${PYTHON_VERSION} -m venv /home/${USERNAME}/venv
-ENV PATH=/home/${USERNAME}/venv/bin:$PATH
+RUN python${PYTHON_VERSION} -m venv /home/containerUser/venv
+ENV PATH=/home/containerUser/venv/bin:$PATH
 
 RUN python -m pip install --no-cache-dir  opencv-python-headless==${OPENCV_VERSION} && \
     python -m pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} -f https://download.pytorch.org/whl/torch_stable.html && \
