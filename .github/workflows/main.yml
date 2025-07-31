@@ -29,7 +29,7 @@ jobs:
         run: |
           for dockerfile in Dockerfile_*; do
             suffix="${dockerfile#Dockerfile_}"
-            imagename="ghcr.io/${{toLower(github.repository)}}:${suffix}"
+            imagename="ghcr.io/${{toLowerCase(github.repository)}}:${suffix}"
             echo "Building $dockerfile as $imagename"
             docker build -f "$dockerfile" -t "$imagename" .
             docker push "$imagename"
