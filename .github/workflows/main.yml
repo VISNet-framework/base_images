@@ -24,12 +24,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Convert repository name to lowercase
+        id: tolower
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ github.repository }}
+
       - name: Build and push all Dockerfile_* images
         shell: bash
         run: |
           for dockerfile in Dockerfile_*; do
             suffix="${dockerfile#Dockerfile_}"
-            imagename="ghcr.io/${{toLowerCase(github.repository)}}:${suffix}"
+            imagename="ghcr.io/${{ steps.tolower.outputs.lowercase }}:${suffix}"
             echo "Building $dockerfile as $imagename"
             docker build -f "$dockerfile" -t "$imagename" .
             docker push "$imagename"
