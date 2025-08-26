@@ -1,0 +1,114 @@
+################################################################################
+# Container description & use case... for deployment with TensorRT.
+# help with selecting correct versions...:
+#  1. First determine which tensorrt version you want. 
+#  2. Check compatability with cuda version and onnx: https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html
+#  3. Tensort (trt) requires cudnn: check cudnn and pytorch compatability
+# https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements 
+#  4. Go to previous pytorch and select correct pytorch + torchvision: https://pytorch.org/get-started/previous-versions/
+#  5. Check for available docker that match cuda, cudnn and ubuntu version: https://hub.docker.com/r/nvidia/cuda/
+#  6. Make sure that the host system 
+#
+# Build:
+#   docker build -t py312_cuda126_cudnn9_trt109_ubuntu24 -f Dockerfile_py312_cuda126_cudnn9_trt109_ubuntu24 .
+# Run as devcontainer:
+#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host py312_cuda126_cudnn9_trt109_ubuntu24
+# To jump into this container if already running, use
+#   docker exec -it py312_cuda126_cudnn9_trt109_ubuntu24 bash
+################################################################################
+ 
+# FROM nvcr.io/nvidia/cuda:12.6.1-base-ubuntu24.04
+FROM nvcr.io/nvidia/cuda:12.6.1-cudnn-devel-ubuntu24.04
+ 
+# ubuntu24 comments
+# Updated python install to avoid deadsnakes and use actual ubuntu package repo
+# updated user credential code to work on 24.04
+
+ENV PYTHON_VERSION="3.12"
+ENV CUDA_VENV="cu126"
+ENV TORCH_VERSION="2.8.0"
+ENV TORCH_VISION_VERSION="0.23.0"
+ 
+USER root
+ARG DEBIAN_FRONTEND=noninteractive
+ 
+RUN  apt-get update && apt-get install -y --no-install-recommends \
+        apt-utils \
+        ca-certificates \
+        git \
+        wget \
+        unzip \
+        nano \
+        openssh-client \
+        gnupg \
+        cmake \
+        libopencv-dev \
+        libprotobuf-dev \
+        protobuf-compiler \
+        && rm -rf /var/lib/apt/lists/* \
+        && apt-get clean
+ 
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+################################### python ###################################
+RUN apt-get update && \
+    apt-get install software-properties-common gcc --no-install-recommends --assume-yes
+RUN apt-get update && \
+    apt-get install software-properties-common gcc python${PYTHON_VERSION} python3-pip python3-setuptools python${PYTHON_VERSION}-dev python${PYTHON_VERSION}-venv --no-install-recommends --assume-yes
+
+################################### sudo rights ###################################
+# setting up container user with sudo access rights (not default)
+RUN touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu
+ARG USERNAME=containerUser
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+#RUN chown -R containerUser:containerUser /home/venv
+## ask kevin why containerUser did not work
+RUN mkdir -p /home/venv && chown -R ${USER_UID}:${USER_GID} /home/venv
+USER ${USERNAME}
+
+################################### venv/torch ###################################
+RUN python${PYTHON_VERSION} -m venv /home/venv
+ENV PATH=/home/venv/bin:$PATH
+ 
+RUN python -m pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} -f https://download.pytorch.org/whl/${CUDA_VENV}/ && \
+    python -m pip install --upgrade pip setuptools wheel
+
+WORKDIR /workspace
+
+############################################# TENSORRT ###################################
+## nice overview for compatability: https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html
+ARG TENSORRT_MAJOR=10.9.0
+ARG TENSORRT_VERSION=10.9.0.34
+ARG TENSORRT_URL=https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/${TENSORRT_MAJOR}/tars/TensorRT-${TENSORRT_VERSION}.Linux.x86_64-gnu.cuda-12.8.tar.gz
+
+WORKDIR /tmp
+# USER root
+# COPY ./TensorRT-${TENSORRT_VERSION}*.tar.gz .
+RUN wget -c ${TENSORRT_URL} -O TensorRT-${TENSORRT_VERSION}*.tar.gz  && \
+    tar -zxvf /tmp/TensorRT-${TENSORRT_VERSION}*.tar.gz -C /workspace  && \
+    rm -rf /tmp/TensorRT-${TENSORRT_VERSION}*.tar.gz  && \
+    cd /workspace/TensorRT-${TENSORRT_VERSION} && rm -rf data doc samples uff  && \
+    export PY_VERSION=$(python${PYTHON_VERSION} -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}') && \
+    python -m pip install /workspace/TensorRT-${TENSORRT_VERSION}/python/tensorrt-${TENSORRT_VERSION}-cp${PY_VERSION}-none-linux_x86_64.whl
+
+ENV TENSORRT_DIR=/workspace/TensorRT-${TENSORRT_VERSION}
+ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+ENV PATH=$TENSORRT_DIR/bin:$PATH
+
+WORKDIR /workspace
+
+################################### custom packages ###################################
+
+RUN python -m pip install onnxruntime==1.22 && \
+    python -m pip install onnxruntime-gpu==1.22
+
+######################################################################
+
