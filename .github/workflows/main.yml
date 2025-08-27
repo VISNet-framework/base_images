@@ -74,3 +74,4 @@ jobs:
           echo "Building $dockerfile as $imagename"
           docker build -f "$dockerfile" -t "$imagename" .
           docker push "$imagename"
+
