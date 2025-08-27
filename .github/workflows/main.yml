@@ -7,7 +7,7 @@ on:
 
 jobs:
   list-changed-dockerfiles:
-    # find all Dockerfile_*py.*_cuda.*_ubuntu.* files and outputs them as a matrix.
+    # find all Dockerfile_* files, except the ones with cudnn or trt in them and outputs them as a matrix.
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -27,11 +27,12 @@ jobs:
           else
             range="${{ github.event.before }} ${{ github.sha }}"
           fi
-          files=$(git diff --name-only $range | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
+          files=$(git diff --name-only $range | grep -E '^Dockerfile_*$' | grep -v 'cudnn*_trt*' | || true)
           if [[ -z "$files" ]]; then
             files_json="[]"
           else
             files_json=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
+          fi
           echo "matrix=$files_json"
           echo "matrix=$files_json" >> $GITHUB_OUTPUT
         
