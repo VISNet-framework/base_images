@@ -13,7 +13,7 @@
 # Build:
 #   docker build -t py312_cuda124_cudnn9_trt109_ubuntu22 -f Dockerfile_py312_cuda124_cudnn9_trt109_ubuntu22 .
 # Run as devcontainer:
-#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host --name py312_cuda124_trt109_ubuntu22
+#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host py312_cuda124_trt109_ubuntu22
 # To jump into this container if already running, use
 #   docker exec -it py312_cuda124_cudnn9_trt109_ubuntu22 bash
 ################################################################################
