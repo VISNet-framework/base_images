@@ -25,7 +25,7 @@ jobs:
           else
             range="${{ github.event.before }} ${{ github.sha }}"
           fi
-          files=$(git diff --name-only ${{ github.event.before }} $range | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
+          files=$(git diff --name-only $range | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
           # Convert to JSON array for matrix
           files_json=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$files_json" >> $GITHUB_OUTPUT
