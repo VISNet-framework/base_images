@@ -14,12 +14,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 2  # Only fetch the last 2 commits
       - name: Find changed Dockerfiles matching pattern
         id: set-matrix
         run: |
-          # Get changed files in the commit range and filter for Dockerfile_py*_cuda*_ubuntu*
-          files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
+          # Determine commit range for push or pull_request
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            range="origin/${{ github.base_ref }}...${{ github.sha }}"
+          else
+            range="${{ github.event.before }} ${{ github.sha }}"
+          fi
+          files=$(git diff --name-only ${{ github.event.before }} $range | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
           # Convert to JSON array for matrix
           files_json=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$files_json" >> $GITHUB_OUTPUT
