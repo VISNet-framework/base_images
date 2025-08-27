@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2  # Only fetch the last 2 commits
+
       - name: Find changed Dockerfiles matching pattern
         id: set-matrix
         shell: bash
@@ -64,6 +65,10 @@ jobs:
         run: |
           dockerfile="${{ matrix.dockerfile }}"
           suffix="${dockerfile#Dockerfile_}"
+          if [[ -z "$suffix" ]]; then
+            echo "No valid suffix for Docker image tag. Skipping build."
+            exit 0
+          fi
           imagename="ghcr.io/${{ steps.tolower.outputs.lowercase }}:${suffix}"
           echo "Building $dockerfile as $imagename"
           docker build -f "$dockerfile" -t "$imagename" .
