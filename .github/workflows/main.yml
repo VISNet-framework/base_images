@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  list-dockerfiles:
-    # find all Dockerfile_* files and outputs them as a matrix.
+  list-changed-dockerfiles:
+    # find all Dockerfile_*py.*_cuda.*_ubuntu.* files and outputs them as a matrix.
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -15,19 +15,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Find all Dockerfile_*
+      - name: Find changed Dockerfiles matching pattern
         id: set-matrix
         run: |
-          files=$(ls Dockerfile_* | jq -R -s -c 'split("\n")[:-1]')
-          echo "matrix=$files" >> $GITHUB_OUTPUT
+          # Get changed files in the commit range and filter for Dockerfile_py*_cuda*_ubuntu*
+          files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
+          # Convert to JSON array for matrix
+          files_json=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=$files_json" >> $GITHUB_OUTPUT
         
   build-and-push:
     # Build and publishes the dockerfiles listed in the previous step
-    needs: list-dockerfiles
+    needs: list-changed-dockerfiles
     runs-on: ubuntu-latest
+    if: needs.list-changed-dockerfiles.outputs.matrix != '[]'
     strategy:
       matrix:
-        dockerfile: ${{fromJson(needs.list-dockerfiles.outputs.matrix)}}
+        dockerfile: ${{fromJson(needs.list-changed-dockerfiles.outputs.matrix)}}
     permissions:
       contents: read
       packages: write
