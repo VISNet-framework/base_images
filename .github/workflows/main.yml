@@ -27,7 +27,7 @@ jobs:
           else
             range="${{ github.event.before }} ${{ github.sha }}"
           fi
-          files=$(git diff --name-only $range | grep -E '^Dockerfile_*$' | grep -v 'cudnn*_trt*' | || true)
+          files=$(git diff --name-only $range | grep -E '^Dockerfile_*$' | grep -v 'cudnn*_trt*' || true)
           if [[ -z "$files" ]]; then
             files_json="[]"
           else
