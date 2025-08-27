@@ -6,9 +6,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  list-dockerfiles:
+    # find all Dockerfile_* files and outputs them as a matrix.
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Find all Dockerfile_*
+        id: set-matrix
+        run: |
+          files=$(ls Dockerfile_* | jq -R -s -c 'split("\n")[:-1]')
+          echo "matrix=$files" >> $GITHUB_OUTPUT
+        
+  build-and-push:
+    # Build and publishes the dockerfiles listed in the previous step
+    needs: list-dockerfiles
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile: ${{fromJson(needs.list-dockerfiles.outputs.matrix)}}
     permissions:
       contents: read
       packages: write
