@@ -104,4 +104,3 @@ RUN python -m pip install onnxruntime==1.22 && \
     python -m pip install onnxruntime-gpu==1.22
 
 ######################################################################
-
