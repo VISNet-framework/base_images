@@ -56,10 +56,9 @@ jobs:
       - name: Build and push all Dockerfile_* images
         shell: bash
         run: |
-          for dockerfile in Dockerfile_*; do
-            suffix="${dockerfile#Dockerfile_}"
-            imagename="ghcr.io/${{ steps.tolower.outputs.lowercase }}:${suffix}"
-            echo "Building $dockerfile as $imagename"
-            docker build -f "$dockerfile" -t "$imagename" .
-            docker push "$imagename"
-          done
+          dockerfile="${{ matrix.dockerfile }}"
+          suffix="${dockerfile#Dockerfile_}"
+          imagename="ghcr.io/${{ steps.tolower.outputs.lowercase }}:${suffix}"
+          echo "Building $dockerfile as $imagename"
+          docker build -f "$dockerfile" -t "$imagename" .
+          docker push "$imagename"
