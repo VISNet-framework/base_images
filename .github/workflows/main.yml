@@ -18,6 +18,7 @@ jobs:
           fetch-depth: 2  # Only fetch the last 2 commits
       - name: Find changed Dockerfiles matching pattern
         id: set-matrix
+        shell: bash
         run: |
           # Determine commit range for push or pull_request
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -26,7 +27,6 @@ jobs:
             range="${{ github.event.before }} ${{ github.sha }}"
           fi
           files=$(git diff --name-only $range | grep -E '^Dockerfile_py.*_cuda.*_ubuntu.*$' || true)
-          # Convert to JSON array for matrix
           files_json=$(echo "$files" | jq -R -s -c 'split("\n")[:-1]')
           echo "matrix=$files_json" >> $GITHUB_OUTPUT
         
