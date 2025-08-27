@@ -1,21 +1,21 @@
 ################################################################################
 # Container description & use case... 
-# nvidia driver version > 530: see https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/
+# nvidia driver version CUDA compatability > 530.xx: see https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/
 #
 # Build:
-#   docker build -t py312_cuda121 -f Dockerfile_py312_cuda121 .
+#   docker build -t py312_cuda121_ubuntu22 -f Dockerfile_py312_cuda121_ubuntu22 .
 # Run as devcontainer:
-#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host py312_cuda121
+#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host py312_cuda121_ubuntu22
 # To jump into this container if already running, use
-#   docker exec -it py312_cuda121 bash
+#   docker exec -it py312_cuda121_ubuntu22 bash
 ################################################################################
 
 FROM nvcr.io/nvidia/cuda:12.1.0-base-ubuntu22.04
 
 ENV PYTHON_VERSION="3.12"
 ENV CUDA_VENV="cu121"
-ENV TORCH_VERSION="2.3.1+cu121"
-ENV TORCH_VISION_VERSION="0.18.1+cu121"
+ENV TORCH_VERSION="2.3.1"
+ENV TORCH_VISION_VERSION="0.18.1"
 
 USER root
 ARG DEBIAN_FRONTEND=noninteractive
