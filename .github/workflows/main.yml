@@ -7,6 +7,10 @@ on:
 
 jobs:
   list-changed-dockerfiles:
+    # Don't run on forks
+    if: |
+      ${{github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name    
+       }}
     # find all Dockerfile_* files, except the ones with cudnn or trt in them and outputs them as a matrix.
     runs-on: ubuntu-latest
     outputs:
@@ -40,7 +44,9 @@ jobs:
     # Build and publishes the dockerfiles listed in the previous step
     needs: list-changed-dockerfiles
     runs-on: ubuntu-latest
-    if: needs.list-changed-dockerfiles.outputs.matrix != '[]'
+    # Only build changed yamls of the official repo.
+    if: needs.list-changed-dockerfiles.outputs.matrix != '[]' &&
+        github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name
     strategy:
       matrix:
         dockerfile: ${{fromJson(needs.list-changed-dockerfiles.outputs.matrix)}}
