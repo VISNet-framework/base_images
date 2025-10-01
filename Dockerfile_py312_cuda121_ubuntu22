@@ -69,6 +69,9 @@ ENV PATH=/home/${USERNAME}/venv/bin:$PATH
 RUN python -m pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} -f https://download.pytorch.org/whl/${CUDA_VENV}/ && \
     python -m pip install --upgrade pip setuptools wheel
 
+################################### workspace ###################################
+RUN mkdir /workdir
+RUN chown ${USERNAME}:${USER_GID} /workdir
 WORKDIR /workspace
 
 ################################### custom packages ###################################
