@@ -59,6 +59,12 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get install -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
+
+################################### workspace ###################################
+RUN mkdir /workdir
+RUN chown ${USERNAME}:${USER_GID} /workdir
+
+################################### set user ###################################
 USER ${USERNAME}
 
 ################################### venv/torch ###################################
@@ -69,9 +75,6 @@ ENV PATH=/home/${USERNAME}/venv/bin:$PATH
 RUN python -m pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} -f https://download.pytorch.org/whl/${CUDA_VENV}/ && \
     python -m pip install --upgrade pip setuptools wheel
 
-################################### workspace ###################################
-RUN mkdir /workdir
-RUN chown ${USERNAME}:${USER_GID} /workdir
 WORKDIR /workspace
 
 ################################### custom packages ###################################
