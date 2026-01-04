@@ -5,7 +5,7 @@
 # Build:
 #   docker build -t py312_cuda126_ubuntu24 -f Dockerfile_py312_cuda126_ubuntu24 .
 # Run as devcontainer:
-#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host py312_cuda126_cudnn9_trt109_ubuntu24
+#   docker run -it --rm --gpus all -v ${PWD}:/project -w /project --network=host py312_cuda126_ubuntu24
 # To jump into this container if already running, use
 #   docker exec -it py312_cuda126_ubuntu24 bash
 ################################################################################
@@ -69,7 +69,7 @@ USER ${USERNAME}
 RUN python${PYTHON_VERSION} -m venv /home/venv
 ENV PATH=/home/venv/bin:$PATH
  
-RUN python -m pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} -f https://download.pytorch.org/whl/${CUDA_VENV}/ && \
+RUN python -m pip install --no-cache-dir torch==${TORCH_VERSION} torchvision==${TORCH_VISION_VERSION} --index-url https://download.pytorch.org/whl/${CUDA_VENV} && \
     python -m pip install --upgrade pip setuptools wheel
 
 
