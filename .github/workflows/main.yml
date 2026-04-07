@@ -1,5 +1,8 @@
 name: Build and Push All Dockerfiles
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [main]
@@ -31,7 +34,7 @@ jobs:
           else
             range="${{ github.event.before }} ${{ github.sha }}"
           fi
-          files=$(git diff --name-only $range | grep -E '^Dockerfile' | grep -v -E 'cudnn.*|dgx.*' || true)
+          files=$(git diff --name-only $range | grep -E '^Dockerfile' | grep -v -E 'trt.*|dgx.*|cudnn9_ubuntu24' || true)
           if [[ -z "$files" ]]; then
             files_json="[]"
           else
