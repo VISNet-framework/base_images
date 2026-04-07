@@ -18,6 +18,8 @@ echo "---"
 
 # Get filtered Dockerfiles: exclude trt, dgx, and cudnn9_ubuntu24
 files=$(printf '%s\n' Dockerfile* | grep -E '^Dockerfile' | grep -v -E 'trt.*|dgx.*|cudnn9_ubuntu24' || true)
+## optionally overwrite files, for a single base image only
+# files=Dockerfile_py312_cuda126_ubuntu24
 
 if [[ -z "$files" ]]; then
   echo "No Dockerfiles matched the filter."
