@@ -11,15 +11,15 @@
 #
 # Pushing a new image:
 # Check file size < should be smaller than 10GB for hosting
-#   docker image inspect py312_cuda126_cudnn9_onnx_ubuntu24:<version> --format '{{.Size}}' | awk '{printf "%.2f GB\n", $1/1024/1024/1024}'
+#   docker image inspect py312_cuda126_cudnn9_onnx_ubuntu24:latest --format '{{.Size}}' | awk '{printf "%.2f GB\n", $1/1024/1024/1024}'
 # login to docker, you need a classic personal github token TODO this
 #   docker login ghcr.io -u YOUR_GITHUB_USERNAME
 # TAG local image
-#   docker tag py312_cuda126_cudnn9_onnx_ubuntu24:<version> ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:<version>
-#   docker tag py312_cuda126_cudnn9_onnx_ubuntu24:<version> ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:latest
+#   docker tag py312_cuda126_cudnn9_onnx_ubuntu24:latest ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:latest
+#   docker tag py312_cuda126_cudnn9_onnx_ubuntu24:latest ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:latest
 # Push to docker
-#   docker push ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:<version>
-#   docker push ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:<version>
+#   docker push ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:latest
+#   docker push ghcr.io/visnet-framework/py312_cuda126_cudnn9_onnx_ubuntu24:latest
 ################################################################################
 
 # ubuntu24 comments
